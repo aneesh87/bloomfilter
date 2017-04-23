@@ -7,9 +7,13 @@
 #define ARR_LENGTH 8
 #define BLOOMSETSIZE 2000000
 
+#define MAX_PRIME 2100003041
+
 typedef struct bf_t{
 
   std::bitset<BLOOMSETSIZE> bloomFilterSet;
+  unsigned int alist[8];  // List of a values
+  unsigned int b;         // b values
 
 } bf_t;
 
@@ -17,48 +21,114 @@ unsigned int primes[ARR_LENGTH] = { 1540655027, 1840695761, 1740683437, 18407015
                                     1640680681, 1940700029, 2100003041, 2040668849
                                   };
 
+
+
+unsigned int customhash (void * key, int len, unsigned int seed, unsigned int * alist, unsigned int b) {
+
+   unsigned int sum = b;
+   unsigned int i = 0;
+   char * hkey = (char*) key;
+   while( *hkey != '\0')
+   { 
+      sum += (alist[i%8]* ((unsigned int) *hkey))%seed;
+      hkey += 1;
+      i++;
+   }
+   return (sum%BLOOMSETSIZE);
+}
+
 /*
-	Hash Function used 
-   Reference MurmurHash2 -- Austin Appleby
-   https://github.com/aappleby/smhasher/blob/master/src/MurmurHash2.cpp
-*/
+ * Function: static_list
+ * Function to assign static values to a list and b
+ * This is to get a fixed error rate.
+ * Code to randomly generate is available (see below)
+ *
+ * 
+ * Return: None
+ */
 
-int MurmurHash2(const void * key, int len, unsigned int seed) {
-   // Note: m,r (or referred as a,b) taken strictly less than set of prime numbers
+void static_list(bf_t * B) {
 
-   // 'm' and 'r' are mixing constants generated offline.
-   // They're not really 'magic', they just happen to work well.
+   B[0].alist[0] = 16807;
+   B[0].alist[1] = 282475249;
+   B[0].alist[2] = 1622650073;
+   B[0].alist[3] = 984943658;
+   B[0].alist[4] = 1144108930;
+   B[0].alist[5] = 470211272;
+   B[0].alist[6] = 101027544;
+   B[0].alist[7] = 1457850878;
+   B[0].b        = 1458777923;
 
-   const int m = 1540483477;
-   const int r = 24;
-   // Initialize the hash to a 'random' value
-   int h = seed ^ len;
-   // Mix 4 bytes at a time into the hash
-   const unsigned char * data = (const unsigned char *)key;
-   while(len >= 4) {
-		int k = *(int *)data;
-		k *= m; 
-		k ^= k >> r; 
-		k *= m; 
-		
-		h *= m; 
-		h ^= k;
-		data += 4;
-		len -= 4;
-	}
-	// Handle the last few bytes of the input array
-	switch(len) {
-      case 3: h ^= data[2] << 16;
-      case 2: h ^= data[1] << 8;
-      case 1: h ^= data[0];
-              h *= m;
-	};
-	// Do a few final mixes of the hash to ensure the last few
-	// bytes are well-incorporated.
-	h ^= h >> 13;
-	h *= m;
-	h ^= h >> 15;
-	return h%BLOOMSETSIZE;
+   B[1].alist[0] = 2007237709;
+   B[1].alist[1] = 823564440;
+   B[1].alist[2] = 1115438165;
+   B[1].alist[3] = 1784484492;
+   B[1].alist[4] = 74243042;
+   B[1].alist[5] = 114807987;
+   B[1].alist[6] = 1137522503;
+   B[1].alist[7] = 1441282327;
+   B[1].b = 16531729;
+
+   B[2].alist[0] = 823378840;
+   B[2].alist[1] = 143542612;
+   B[2].alist[2] = 896544303;
+   B[2].alist[3] = 1474833169;
+   B[2].alist[4] = 1264817709;
+   B[2].alist[5] = 1998097157;
+   B[2].alist[6] = 1817129560;
+   B[2].alist[7] = 1131570933;
+   B[2].b = 197493099;
+
+   B[3].alist[0] = 1404280278;
+   B[3].alist[1] = 893351816;
+   B[3].alist[2] = 1505795335;
+   B[3].alist[3] = 1954899097;
+   B[3].alist[4] = 1636807826;
+   B[3].alist[5] = 563613512;
+   B[3].alist[6] = 101929267;
+   B[3].alist[7] = 1580723810;
+   B[3].b = 704877633;
+
+   B[4].alist[0] = 1358580979;
+   B[4].alist[1] = 1624379149;
+   B[4].alist[2] = 28233538;
+   B[4].alist[3] = 784558821;
+   B[4].alist[4] = 530511967;
+   B[4].alist[5] = 10007631;
+   B[4].alist[6] = 1551901393;
+   B[4].alist[7] = 1617819336;
+   B[4].b = 1399125485;
+
+   B[5].alist[0] = 156091745;
+   B[5].alist[1] = 1356425228;
+   B[5].alist[2] = 1899894091;
+   B[5].alist[3] = 585640194;
+   B[5].alist[4] = 937186357;
+   B[5].alist[5] = 1646035001;
+   B[5].alist[6] = 1025921153;
+   B[5].alist[7] = 510616708;
+   B[5].b = 590357944;
+
+   B[6].alist[0] = 771515668;
+   B[6].alist[1] = 357571490;
+   B[6].alist[2] = 1044788124;
+   B[6].alist[3] = 1927702196;
+   B[6].alist[4] = 1952509530;
+   B[6].alist[5] = 130060903;
+   B[6].alist[6] = 1942727722;
+   B[6].alist[7] = 1083454666;
+   B[6].b = 1108728549;
+
+   B[7].alist[0] = 685118024;
+   B[7].alist[1] = 18794760;
+   B[7].alist[2] = 1060806853;
+   B[7].alist[3] = 571540977;
+   B[7].alist[4] = 194847408;
+   B[7].alist[5] = 2035308228;
+   B[7].alist[6] = 158374933;
+   B[7].alist[7] = 1075260298;
+   B[7].b = 824938981;
+
 }
 
 /*
@@ -80,9 +150,37 @@ void reset_bloom(bf_t * t) {
  * 
  * Return Value: Reference to newly created bloom filter
  */
+
 bf_t * create_bf() {
    bf_t * BloomFilter = new bf_t[ARR_LENGTH];
    reset_bloom(BloomFilter); 
+
+/*
+
+// Random generation code
+// Uncomment this code to generate 'a' list values and 'b' values randomly 
+//
+
+
+   for(int j=0; j<8; j++) {
+       BloomFilter[j].alist[0] = rand()%MAX_PRIME;
+       BloomFilter[j].alist[1] = rand()%MAX_PRIME;
+       BloomFilter[j].alist[2] = rand()%MAX_PRIME;
+       BloomFilter[j].alist[3] = rand()%MAX_PRIME;
+       BloomFilter[j].alist[4] = rand()%MAX_PRIME;
+       BloomFilter[j].alist[5] = rand()%MAX_PRIME;
+       BloomFilter[j].alist[6] = rand()%MAX_PRIME;
+       BloomFilter[j].alist[7] = rand()%MAX_PRIME;
+       BloomFilter[j].b = rand()%MAX_PRIME;
+   }
+   
+*/
+
+
+ // static list for a fixed error rate
+
+   static_list(BloomFilter);
+
    return BloomFilter;	
 }
 
@@ -96,7 +194,8 @@ bf_t * create_bf() {
 void insert_bf(bf_t *b, char *s) {
 	for(int j=0; j<ARR_LENGTH; j++)
    { 
-     int pos = MurmurHash2(s, strlen(s), primes[j]);
+     unsigned int pos = customhash(s, strlen(s), primes[j], b[j].alist, b[j].b);
+     //std::cout<<pos;
 	  b[j].bloomFilterSet.set(pos);
 	}
 }
@@ -111,7 +210,7 @@ void insert_bf(bf_t *b, char *s) {
 int is_element(bf_t *b, char *q) {
 	for(int j=0; j<ARR_LENGTH; j++) 
    {  
-      int pos = MurmurHash2(q, strlen(q), primes[j]);
+      unsigned int pos = customhash(q, strlen(q), primes[j], b[j].alist, b[j].b);
 	   if(b[j].bloomFilterSet.test(pos)==0) return 0;
 	}
 	return 1;
