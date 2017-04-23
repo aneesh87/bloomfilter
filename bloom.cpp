@@ -84,8 +84,9 @@ bf_t * create_bf(){
 	bf_t *bloomFilter = new bf_t[ARR_LENGTH];
 	
 	for(int i=0; i<ARR_LENGTH; i++){
-		bloomFilter[i].bloomSet.set();
-		bloomFilter[i].bloomSet.flip();
+		//bloomFilter[i].bloomSet.set();
+		//bloomFilter[i].bloomSet.flip();
+		bloomFilter[i].bloomSet.reset();
 	}	 
 
 	return bloomFilter;	
