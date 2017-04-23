@@ -24,9 +24,11 @@ unsigned int primes[ARR_LENGTH] = { 1540655027, 1840695761, 1740683437, 18407015
 */
 
 int MurmurHash2(const void * key, int len, unsigned int seed) {
+   // Note: m,r (or referred as a,b) taken strictly less than set of prime numbers
 
    // 'm' and 'r' are mixing constants generated offline.
    // They're not really 'magic', they just happen to work well.
+
    const int m = 1540483477;
    const int r = 24;
    // Initialize the hash to a 'random' value
