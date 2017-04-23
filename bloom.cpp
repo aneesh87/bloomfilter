@@ -3,9 +3,8 @@
 
 */
 
-
-#include <stdio.h>
 #include <iostream>
+#include <stdio.h>
 #include <string.h>
 #include <bitset>
 #include <cstdlib>
@@ -17,8 +16,7 @@ typedef struct bf_t{
 	std::bitset<2000000> bloomSet;
 }bf_t;
 
-
-int prime[ARR_LENGTH] = {291299,288851,315743,331897,410393, 540559, 658303,777277};
+int prime[ARR_LENGTH] = {3,5,7,11,13,17,19,23};
 
 /*
 	Hash Function
@@ -62,12 +60,12 @@ int MurmurHash2 ( const void * key, int len, unsigned int seed )
 
 	switch(len)
 	{
-      case 1: h ^= data[0];
-              h *= m;
+      case 3: h ^= data[2] << 16;
 
       case 2: h ^= data[1] << 8;
 
-	   case 3: h ^= data[2] << 16;
+      case 1: h ^= data[0];
+              h *= m;
 	};
 
 	// Do a few final mixes of the hash to ensure the last few
@@ -121,7 +119,7 @@ int is_element(bf_t *b, char *q){
 
 }
 
-/*
+
 
 void sample_string_A(char *s, long i)
 {  s[0] = (char)(1 + (i%254));
@@ -170,13 +168,12 @@ void sample_string_E(char *s, long i)
    s[6] = '\0';
 }
 
-*/
 
 int main()
 {  long i,j; 
    bf_t * bloom;
    bloom = create_bf();
-   printf("Created Filter\n");
+   printf("Bloom Filter created\n");
    for( i= 0; i< 1450000; i++ )
    {  char s[8];
       sample_string_A(s,i);
